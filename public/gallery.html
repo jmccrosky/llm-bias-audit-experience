@@ -1,0 +1,71 @@
+<!-- public/gallery.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Gallery</title>
+    <style>
+        .gallery-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* creates as many columns as can fit, each at least 200px wide */
+            gap: 10px; /* adds space between grid items */
+        }
+        .gallery img {
+            width: 100%; /* causes image to fill its container's width */
+            height: 100%; /* causes image to fill its container's height */
+            object-fit: cover; /* maintains aspect ratio, cropping as needed */
+            min-height: 100px; /* ensures images are at least 100px tall */
+        }
+    </style>
+    
+    
+</head>
+
+<body>
+    <h1>Image Gallery</h1>
+    <div class="gallery-container">
+        <div id="fire" class="gallery">
+            <h2>Fire Images</h2>
+        </div>
+        <div id="nofire" class="gallery">
+            <h2>No Fire Images</h2>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+
+        // Fetch and display the current images when the page loads
+        window.addEventListener('DOMContentLoaded', (event) => {
+            fetch('/current-images')
+                .then(response => response.json())
+                .then(images => {
+                    for (const dir in images) {
+                        const gallery = document.getElementById(dir);
+                        images[dir].forEach(filename => {
+                            const imgPath = `/images/${dir}/${filename}`;
+                            gallery.innerHTML += `<div><img src="${imgPath}" alt="${filename}"></div>`;
+                        });
+                    }
+                })
+                .catch(error => console.error('Error fetching initial images:', error));
+        });
+
+        const socket = io();
+
+        socket.on('image update', (data) => {
+            const { dir, filename, eventType } = data;
+            if (eventType === 'rename') { // Assuming 'rename' means new files added
+                const gallery = document.getElementById(dir);
+                const imgPath = `/images/${dir}/${filename}`;
+                // Inside your fetch then function and socket.on function
+gallery.innerHTML += `<div style="height: auto; min-height: 100px;"><img src="${imgPath}" alt="${filename}"></div>`;
+
+            }
+        });
+    </script>
+</body>
+
+</html>
