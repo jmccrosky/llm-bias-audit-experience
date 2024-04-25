@@ -1,6 +1,6 @@
 # LLM Bias Audit Experience
 
-This currently requirest the LLM (probably llava) to be served locally, twice.
+This currently requires the LLM (probably llava) to be served locally, twice.
 
  - Using ollama on port 11434
  - Using llamafile on port 1234
