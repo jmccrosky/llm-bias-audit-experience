@@ -1,3 +1,4 @@
 uploads
 images/*
 llama.log
+.DS_Store
