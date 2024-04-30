@@ -122,7 +122,7 @@ function handlePersonAnalysis() {
     reasonContainer.appendChild(reasonParagraph);
     reasonParagraph.textContent += "Reason: "
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
-    const analysisParagraph = document.getElementById('analysis').querySelector('p')
+    const analysisParagraph = document.getElementById('analysis').lastElementChild;
     const response = analysisParagraph.textContent.split(" ").slice(-2).join(" ");
     canvas.toBlob(blob => sendBlobAsync(blob, 'http://localhost:8080/analyze-with-response', handleReason, reasonParagraph, response));
 }
