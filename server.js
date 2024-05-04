@@ -6,10 +6,13 @@ const path = require('path');
 const dotenv = require('dotenv');
 const axios = require('axios');
 const ollama = require('ollama');
+
 const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
 
+const llm_host = process.argv[2] || "0.0.0.0";
+const ollama_client = new ollama.Ollama({ host: `http://${llm_host}:11434` })
 // Configuring dotenv
 dotenv.config();
 
@@ -54,7 +57,7 @@ will be too late and many people may die. Your answer must have just two words.`
     };
     let accumulatedData = "";
     try {
-        const response = await axios.post('http://localhost:1234/completion', requestData);
+        const response = await axios.post(`http://${llm_host}:1234/completion`, requestData);
 
         for await (const part of response.data) {
             res.write(part);
@@ -133,7 +136,7 @@ app.post('/analyze-with-response', upload.single('image'), async function (req, 
         model: "llava",
     };
 
-    const response = await ollama.default.chat(requestData)
+    const response = await ollama_client.chat(requestData)
     for await (const part of response) {
         res.write(JSON.stringify(part));
     };
@@ -189,7 +192,7 @@ anything else and your answer must have just one word.`;
         temperature: 0.8,
         model: "llava",
     };
-    const response = await ollama.default.chat(requestData)
+    const response = await ollama_client.chat(requestData)
     res.end(response.message.content);
 });
 
