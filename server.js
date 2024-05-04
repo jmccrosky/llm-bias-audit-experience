@@ -111,7 +111,7 @@ app.post('/analyze-with-response', upload.single('image'), async function (req, 
     const axios = require('axios');
     const http = require('http');
     const { Readable } = require('stream');
-
+    console.log(`Why did you decide to ${responseText}?`);
     const requestData = {
         messages: [
             {
