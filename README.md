@@ -19,3 +19,20 @@ This currently requires the LLM (probably llava) to be served locally, twice.
  - Using llamafile on port 1234
 
  I used ollama as it support the more convenient `chat/completions` endpoint.   But it does not support the `logit_bias` parameter, which I need for one call, so use llamafile for that.
+
+ ### Installation
+
+  - Install llava llamafile: `wget -O llava.llamafile https://huggingface.co/jartine/llava-v1.5-7B-GGUF/resolve/main/llava-v1.5-7b-q4.llamafile?download=true && chmod +x llava.llamafile`
+  - Install ollama: `export OLLAMA_VERSION=0.1.32 && curl -fsSL https://ollama.com/install.sh | sh` (version 0.1.33 is broken for llava)
+  - Download the llava model for ollama: `ollama pull llava`
+
+ ### Running
+
+In one screen session:
+  - `sudo systemctl stop ollama`
+  - `OLLAMA_HOST=0.0.0.0:11434 ollama serve`
+
+In another screen session:
+  - `./llava.llamafile --port 1234 --nobrowser -ngl 9999 --host 0.0.0.0`
+
+
