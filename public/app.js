@@ -30,7 +30,6 @@ function personDetect() {
 function analyzePerson() {
     const canvas = document.getElementById('canvas');
     const context = canvas.getContext('2d');
-    //const video = document.getElementById('video');
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
     const analysisContainer = document.getElementById('analysis');
     const analysisParagraph = document.createElement('p');
@@ -198,7 +197,7 @@ function displayMessage(jsonObj, container) {
     if (jsonObj.message && jsonObj.message.content) {
         container.textContent += jsonObj.message.content; // Display the content
     }
-    if (jsonObj.content) {
+    if (jsonObj.content && jsonObj.content != "</s>") {
         container.textContent += jsonObj.content; // Display the content
     }
 }
