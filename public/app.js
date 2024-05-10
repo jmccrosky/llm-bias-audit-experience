@@ -1,28 +1,41 @@
+const useWebCam = false; // Toggle this to true to use the webcam, false to use the test image
+const imageElement = 'image';
+
 document.addEventListener('DOMContentLoaded', function () {
+    const useWebCam = false; // Toggle this to true to use the webcam, false to use the test image
     const video = document.getElementById('video');
+    const image = document.getElementById('image');
     const detectorContainer = document.getElementById('detector');
     const detectorParagraph = document.createElement('p');
     detectorParagraph.textContent = "Monitoring...";
     detectorContainer.appendChild(detectorParagraph);
 
-    if (navigator.mediaDevices.getUserMedia) {
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(function (stream) {
-                video.srcObject = stream;
-                video.addEventListener('playing', personDetect);
-            })
-            .catch(error => {
-                console.error("Error accessing the camera:", error);
-            });
+    if (useWebCam) {
+        if (navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(function (stream) {
+                    video.srcObject = stream;
+                    video.style.display = 'block';
+                    video.addEventListener('playing', personDetect);
+                })
+                .catch(error => {
+                    console.error("Error accessing the camera:", error);
+                });
+        }
+    } else {
+        image.onload = function() {
+            personDetect();
+        };
+        image.style.display = 'block'; // Unhide the image after setting up the detection function
     }
 });
 
 function personDetect() {
     const canvas = document.getElementById('canvas');
     const context = canvas.getContext('2d');
-
+    const image = document.getElementById(imageElement);
     setTimeout(() => {
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
         canvas.toBlob(blob => sendBlobSync(blob, 'http://localhost:8080/person_detect', handlePersonDetectionResponse));
     }, 100);
 }
@@ -115,7 +128,7 @@ function displayInteractiveMessage(paragraph, message, callback) {
 function handlePersonAnalysis() {
     const canvas = document.getElementById('canvas');
     const context = canvas.getContext('2d');
-    const video = document.getElementById('video');
+    const video = document.getElementById(imageElement);
     const reasonContainer = document.getElementById('reason');
     const reasonParagraph = document.createElement('p');
     reasonContainer.appendChild(reasonParagraph);

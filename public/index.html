@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Camera Feed with AI Analysis</title>
+    <title>Image or Camera Feed Analysis</title>
 </head>
 <body>
-    <video id="video" width="640" height="480" autoplay></video>
+    <video id="video" width="640" height="480" autoplay style="display:none;"></video>
+    <img id="image" src="test.png" style="width:640px; height:480px; display:none;">
     <canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
     <div id="detector"></div>
     <div id="analysis"></div>

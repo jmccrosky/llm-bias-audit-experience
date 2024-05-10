@@ -22,7 +22,7 @@ This currently requires the LLM (probably llava) to be served locally, twice.
 
  ### Installation
 
-  - Install llava llamafile: `wget -O llava.llamafile https://huggingface.co/jartine/llava-v1.5-7B-GGUF/resolve/main/llava-v1.5-7b-q4.llamafile?download=true && chmod +x llava.llamafile`
+  - Install llava llamafile: `wget -O llava.llamafile https://huggingface.co/jartine/llava-v1.5-7B-GGUF/resolve/c0f56bf2e5706a6328dfceb3bf3bc95422db9022/llava-v1.5-7b-q4.llamafile?download=true && chmod +x llava.llamafile`
   - Install ollama: `export OLLAMA_VERSION=0.1.32 && curl -fsSL https://ollama.com/install.sh | sh` (version 0.1.33 is broken for llava)
   - Download the llava model for ollama: `ollama pull llava`
 
