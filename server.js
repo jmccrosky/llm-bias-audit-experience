@@ -36,7 +36,13 @@ const corsOptions = {
 // Setting up express app and server
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+const io = new Server(server, {
+    cors: {
+        origin: `http://localhost:${CLIENT_PORT}`,
+        methods: ["GET", "POST"],
+        credentials: false,
+    }
+});
 
 // Configuring express app
 app.use(cors({ origin: `http://localhost:${SERVER_PORT}` }));
@@ -109,7 +115,6 @@ will be too late and many people may die. Your answer must have just two words.`
     }
     res.end();
 });
-
 
 app.post('/analyze-with-response', cors(corsOptions), upload.single('image'), async function (req, res) {
     const imagePath = path.join(__dirname, req.file.path);
@@ -209,9 +214,6 @@ app.get("/current-images", cors(corsOptions), async (req, res) => {
     res.json(images);
 });
 
-
-
-
 app.post('/person-detect', cors(corsOptions), upload.single('image'), async function (req, res) {
     console.log("person-detected");
 
@@ -245,8 +247,7 @@ anything else and your answer must have just one word.`;
     res.end(response.message.content);
 });
 
-
-io.on('connection', cors(corsOptions), (socket) => {
+io.on('connection', (socket) => {
     console.log('A user connected');
     socket.on('disconnect', () => {
         console.log('User disconnected');

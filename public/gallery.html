@@ -13,7 +13,15 @@
     <h1 class="visually-hidden">Image Gallery</h1>
     <div class="gallery-container">
         <div id="fire" class="gallery-category gallery-category-shoot">
-            <h2>Shoot</h2>
+            <h2>
+                Shoot
+                <div id="crosshair">
+                    <span class="crosshair-hair"></span>
+                    <span class="crosshair-hair"></span>
+                    <span class="crosshair-hair"></span>
+                    <span class="crosshair-hair"></span>
+                </div>
+            </h2>
             <div class="gallery-category-images"></div>
         </div>
         <div id="nofire" class="gallery-category gallery-category-noshoot">
@@ -29,7 +37,7 @@
             fetch("http://localhost:8080/current-images")
                 .then(response => response.json())
                 .then(images => {
-                    console.log("images", images);
+                    // console.log("current-images", images);
 
                     for (const dir in images) {
                         const gallery = document.getElementById(dir);
@@ -45,16 +53,28 @@
                 });
         });
 
-        const socket = io();
+        const socket = io("http://localhost:8080");
+        socket.connect();
         socket.on("gallery_updated", (data) => {
+            // console.log("gallery_updated", data);
+
             const { dir, filename, eventType } = data;
             // The event type `rename` assumes that a new image has been
             // added to the gallery.
             if (eventType === "rename") {
                 const gallery = document.getElementById(dir);
-                const imgPath = `/images/${dir}/${filename}`;
+                const imgPath = `http://localhost:8080/images/${dir}/${filename}`;
 
-                gallery.innerHTML += `<div class="gallery-item"><img src="${imgPath}" alt="${filename}"></div>`;
+                let galleryCategoryContainer = gallery.getElementsByClassName("gallery-category-images")[0];
+                const imageContainer = document.createElement("div");
+                imageContainer.classList.add("gallery-item");
+
+                const image = document.createElement("img");
+                image.setAttribute("src", imgPath);
+                image.setAttribute("alt", filename);
+                imageContainer.appendChild(image);
+
+                galleryCategoryContainer.appendChild(imageContainer);
             }
         });
     </script>

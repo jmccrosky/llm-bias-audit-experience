@@ -1,9 +1,26 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Serif:ital,opsz,wght@0,8..144,100..900;1,8..144,100..900&display=swap');
+
 :root {
   --spacing: 0.5vw;
   --images-per-row: 5;
+  --font-title-size: 5vw;
+  --color-red: red;
+  --color-grey: rgb(215, 215, 215);
 }
 
 body {
+  font-family: "Roboto Serif", serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+  /* font-variation-settings: "wdth" 100, "GRAD" 0; */
+  margin: 0;
+}
+
+h1, h2 {
+  font-weight: 400;
+  font-size: var(--font-title-size);
+  line-height: 1em;
   margin: 0;
 }
 
@@ -32,12 +49,72 @@ body {
 }
 
 .gallery-category-shoot {
-  background: red;
+  background: var(--color-red);
   color: rgb(255, 255, 255);
 }
 
+.gallery-category-shoot h2 {
+  position: relative;
+}
+
+#crosshair {
+  background: none;
+  border-radius: 50%;
+  position: absolute;
+  left: 54.5%;
+  top: 58%;
+  transform: translate(-50%, -50%);
+  height: calc(var(--font-title-size) * 0.5);
+  width: calc(var(--font-title-size) * 0.5);
+}
+
+#crosshair::after {
+  background: white;
+  border-radius: 50%;
+  content: "";
+  display: block;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  height: calc(var(--font-title-size) * 0.08);
+  width: calc(var(--font-title-size) * 0.08);
+}
+
+#crosshair span {
+  background: white;
+  border-radius: calc(var(--font-title-size) * 0.06);
+  display: block;
+  height: calc(var(--font-title-size) * 0.06);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: calc(var(--font-title-size) * 0.22);
+  transform: translate(-50%, -50%);
+}
+
+#crosshair span:nth-of-type(1) {
+  left: 7%;
+  width: calc(var(--font-title-size) * 0.24);
+}
+#crosshair span:nth-of-type(2) {
+  left: 50%;
+  top: 0%;
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+#crosshair span:nth-of-type(3) {
+  left: 93%;
+  top: 50%;
+  width: calc(var(--font-title-size) * 0.24);
+}
+#crosshair span:nth-of-type(4) {
+  left: 50%;
+  top: 100%;
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+
 .gallery-category-noshoot {
-  background: rgb(215, 215, 215);
+  background: var(--color-grey);
   color: rgb(0, 0, 0);
 }
 
