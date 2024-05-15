@@ -24,6 +24,9 @@
             </h2>
             <div class="gallery-category-images"></div>
         </div>
+        <div id="latest" class="gallery-latest">
+            <img id="latest-image" src="" alt="">
+        </div>
         <div id="nofire" class="gallery-category gallery-category-noshoot">
             <h2>Stand down</h2>
             <div class="gallery-category-images"></div>
@@ -32,8 +35,39 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.js"></script>
     <script>
-        // Fetch and display the current images when the page loads
-        window.addEventListener("DOMContentLoaded", async (event) => {
+        function addGalleryImage(dir, filename) {
+            const gallery = document.getElementById(dir);
+            let galleryCategoryContainer = gallery.getElementsByClassName("gallery-category-images")[0];
+            const imageContainer = document.createElement("div");
+            imageContainer.classList.add("gallery-item");
+
+            const image = document.createElement("img");
+            image.setAttribute("src", filename);
+            image.setAttribute("alt", filename);
+            imageContainer.appendChild(image);
+
+            galleryCategoryContainer.appendChild(imageContainer);
+        }
+
+        function resetGallery() {
+            const galleryImages = document.getElementsByClassName("gallery-category-images");
+            [...galleryImages].forEach((imageCategory) => {
+                imageCategory.innerHTML = "";
+            });
+        }
+
+        function setLatestImage(dir, filename) {
+            const latestImageUrl = `http://localhost:8080/images/${dir}/${filename}`;
+            const latestImageContainer = document.getElementById("latest");
+            latestImageContainer.classList.remove("gallery-latest-fire", "gallery-latest-nofire");
+            latestImageContainer.classList.add(`gallery-latest-${dir}`);
+
+            const latestImage = document.getElementById("latest-image");
+            latestImage.setAttribute("src", latestImageUrl);
+            latestImage.setAttribute("alt", filename);
+        }
+
+        function fetchGalleryImages() {
             fetch("http://localhost:8080/current-images")
                 .then(response => response.json())
                 .then(images => {
@@ -43,38 +77,32 @@
                         const gallery = document.getElementById(dir);
                         const galleryImages = gallery.getElementsByClassName("gallery-category-images")[0];
                         images[dir].forEach(filename => {
-                            // const imgPath = `/images/${dir}/${filename}`;
-                            galleryImages.innerHTML += `<div class="gallery-item"><img src="${filename}" alt="${filename}"></div>`;
+                            addGalleryImage(dir, filename);
                         });
                     }
                 })
                 .catch(error => {
                     console.error("Error fetching initial images:", error);
                 });
+        }
+
+        // Fetch and display the current images when the page loads
+        window.addEventListener("DOMContentLoaded", async (event) => {
+            fetchGalleryImages();
         });
 
         const socket = io("http://localhost:8080");
         socket.connect();
         socket.on("gallery_updated", (data) => {
-            // console.log("gallery_updated", data);
+            console.log("gallery_updated", data);
 
             const { dir, filename, eventType } = data;
             // The event type `rename` assumes that a new image has been
             // added to the gallery.
             if (eventType === "rename") {
-                const gallery = document.getElementById(dir);
-                const imgPath = `http://localhost:8080/images/${dir}/${filename}`;
-
-                let galleryCategoryContainer = gallery.getElementsByClassName("gallery-category-images")[0];
-                const imageContainer = document.createElement("div");
-                imageContainer.classList.add("gallery-item");
-
-                const image = document.createElement("img");
-                image.setAttribute("src", imgPath);
-                image.setAttribute("alt", filename);
-                imageContainer.appendChild(image);
-
-                galleryCategoryContainer.appendChild(imageContainer);
+                resetGallery();
+                fetchGalleryImages();
+                setLatestImage(dir, filename);
             }
         });
     </script>

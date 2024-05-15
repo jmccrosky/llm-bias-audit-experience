@@ -15,6 +15,7 @@ const SERVER_PORT = 8080;
 const CLIENT_PORT = 3030;
 const LLM_PORT = 11434;
 const llm_host = process.argv[2] || "0.0.0.0";
+const MAX_IMAGES_PER_CATEGORY = 20;
 
 const image_directories = ['fire', 'nofire'];
 
@@ -180,15 +181,15 @@ async function downloadRemoteImage(url, filepath) {
     })
 }
 
+function getMostRecentImage() {
+    const stats = fs.statSync("/dir/file.txt");
+    const mtime = stats.mtime;
+    console.log(mtime);
+}
+
 // Endpoint to get the current images
 app.get("/current-images", cors(corsOptions), async (req, res) => {
-    // const images = { fire: [], nofire: [] };
-    const images = {
-        fire: [
-        ],
-        nofire: [
-        ]
-    };
+    const images = { fire: [], nofire: [] };
 
     async function downloadAndStoreRandomCat() {
         const catImages = await fetch("https://api.thecatapi.com/v1/images/search?limit=1");
@@ -198,12 +199,12 @@ app.get("/current-images", cors(corsOptions), async (req, res) => {
         await downloadRemoteImage(data[0].url, path.join(__dirname, "images", randomImageCategoryKey, data[0].url.split("/").slice(-1)[0]))
     }
 
-    await downloadAndStoreRandomCat();
+    // await downloadAndStoreRandomCat();
 
     image_directories.forEach((dir) => {
         const dirPath = path.join(__dirname, "images", dir);
         try {
-            fs.readdirSync(dirPath).forEach(filepath => {
+            fs.readdirSync(dirPath).forEach((filepath, fileIndex) => {
                 images[dir].push(`http://localhost:8080/images/${dir}/${filepath}`);
             });
         } catch (err) {

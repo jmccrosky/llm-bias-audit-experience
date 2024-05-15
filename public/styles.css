@@ -44,7 +44,8 @@ h1, h2 {
   align-items: center;
   display: flex;
   flex-direction: column;
-  padding: var(--spacing);
+  padding: 15vw calc(var(--spacing) * 2);
+  position: relative;
   text-transform: capitalize;
 }
 
@@ -53,8 +54,43 @@ h1, h2 {
   color: rgb(255, 255, 255);
 }
 
-.gallery-category-shoot h2 {
-  position: relative;
+.gallery-category-shoot h2,
+.gallery-category-noshoot h2 {
+  position: absolute;
+  top: 5vw;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  z-index: 1;
+}
+
+.gallery-latest {
+  border-radius: 50%;
+  box-sizing: border-box;
+  background: white;
+  height: 13vw;
+  left: 50%;
+  padding: calc(var(--spacing) * 2);
+  position: absolute;
+  top: 1vw;
+  transform: translateX(-50%);
+  width: 13vw;
+  z-index: 1;
+}
+
+.gallery-latest-fire {
+  background: var(--color-red);
+}
+
+.gallery-latest-nofire {
+  background: var(--color-grey);
+}
+
+.gallery-latest img {
+  border-radius: 50%;
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
 }
 
 #crosshair {
