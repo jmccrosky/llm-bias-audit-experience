@@ -1,4 +1,4 @@
-// Importing required modules
+// SERVER_Importing required modules
 const express = require('express');
 const multer = require('multer');
 const fs = require('fs');
@@ -11,10 +11,27 @@ const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
 
+const SERVER_PORT = 8080;
+const CLIENT_PORT = 3030;
+const LLM_PORT = 11434;
 const llm_host = process.argv[2] || "0.0.0.0";
-const ollama_client = new ollama.Ollama({ host: `http://${llm_host}:11434` })
+
+const image_directories = ['fire', 'nofire'];
+
+const ollama_client = new ollama.Ollama({ host: `${llm_host}:${LLM_PORT}` })
 // Configuring dotenv
 dotenv.config();
+
+const whitelist = [`http://localhost:${CLIENT_PORT}`];
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (whitelist.indexOf(origin) !== -1) {
+      callback(null, true)
+    } else {
+      callback(new Error('Not allowed by CORS'))
+    }
+  }
+}
 
 // Setting up express app and server
 const app = express();
@@ -22,7 +39,7 @@ const server = http.createServer(app);
 const io = new Server(server);
 
 // Configuring express app
-app.use(cors({ origin: 'http://localhost:8080' }));
+app.use(cors({ origin: `http://localhost:${SERVER_PORT}` }));
 app.use(express.json());
 app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true }));
@@ -31,7 +48,7 @@ app.use('/images', express.static('images'));
 // Setting up multer for file uploads
 const upload = multer({ dest: 'uploads/' });
 
-app.post('/analyze', upload.single('image'), async function (req, res) {
+app.post('/analyze', cors(corsOptions), upload.single('image'), async function (req, res) {
     const imagePath = path.join(__dirname, req.file.path);
     const image = require('fs').readFileSync(imagePath);
     const imageAsBase64 = Buffer.from(image).toString('base64');
@@ -94,7 +111,7 @@ will be too late and many people may die. Your answer must have just two words.`
 });
 
 
-app.post('/analyze-with-response', upload.single('image'), async function (req, res) {
+app.post('/analyze-with-response', cors(corsOptions), upload.single('image'), async function (req, res) {
     const imagePath = path.join(__dirname, req.file.path);
     const image = require('fs').readFileSync(imagePath);
     const imageAsBase64 = Buffer.from(image).toString('base64');
@@ -144,15 +161,45 @@ app.post('/analyze-with-response', upload.single('image'), async function (req, 
 
 });
 
-// Endpoint to get the current images
-app.get('/current-images', (req, res) => {
-    const images = { fire: [], nofire: [] };
+async function downloadRemoteImage(url, filepath) {
+    const response = await axios({
+      url,
+      method: "GET",
+      responseType: "stream",
+    })
+    return new Promise((resolve, reject) => {
+      response.data
+        .pipe(fs.createWriteStream(filepath))
+        .on("error", reject)
+        .once("close", () => resolve(filepath))
+    })
+}
 
-    directories.forEach((dir) => {
-        const dirPath = path.join(__dirname, 'images', dir);
+// Endpoint to get the current images
+app.get("/current-images", cors(corsOptions), async (req, res) => {
+    // const images = { fire: [], nofire: [] };
+    const images = {
+        fire: [
+        ],
+        nofire: [
+        ]
+    };
+
+    async function downloadAndStoreRandomCat() {
+        const catImages = await fetch("https://api.thecatapi.com/v1/images/search?limit=1");
+        const data = await catImages.json();
+        const imageCategoryKeys = Object.keys(images);
+        const randomImageCategoryKey = imageCategoryKeys[Math.floor(Math.random() * imageCategoryKeys.length)];
+        await downloadRemoteImage(data[0].url, path.join(__dirname, "images", randomImageCategoryKey, data[0].url.split("/").slice(-1)[0]))
+    }
+
+    await downloadAndStoreRandomCat();
+
+    image_directories.forEach((dir) => {
+        const dirPath = path.join(__dirname, "images", dir);
         try {
-            fs.readdirSync(dirPath).forEach(file => {
-                images[dir].push(file);
+            fs.readdirSync(dirPath).forEach(filepath => {
+                images[dir].push(`http://localhost:8080/images/${dir}/${filepath}`);
             });
         } catch (err) {
             console.error(`Error reading directory ${dirPath}:`, err);
@@ -165,7 +212,9 @@ app.get('/current-images', (req, res) => {
 
 
 
-app.post('/person_detect', upload.single('image'), async function (req, res) {
+app.post('/person-detect', cors(corsOptions), upload.single('image'), async function (req, res) {
+    console.log("person-detected");
+
     const imagePath = path.join(__dirname, req.file.path);
     const image = require('fs').readFileSync(imagePath);
     const imageAsBase64 = Buffer.from(image).toString('base64');
@@ -197,26 +246,23 @@ anything else and your answer must have just one word.`;
 });
 
 
-io.on('connection', (socket) => {
+io.on('connection', cors(corsOptions), (socket) => {
     console.log('A user connected');
     socket.on('disconnect', () => {
         console.log('User disconnected');
     });
 });
 
-const directories = ['fire', 'nofire'];
-directories.forEach(dir => {
+image_directories.forEach(dir => {
     const dirPath = path.join(__dirname, 'images', dir);
     fs.watch(dirPath, (eventType, filename) => {
         if (filename) {
             console.log(`Change detected: ${filename}`);
-            io.emit('image update', { dir, filename, eventType });
+            io.emit('gallery_updated', { dir, filename, eventType });
         }
     });
 });
 
-const PORT = 8080;
-
-server.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+server.listen(SERVER_PORT, () => {
+    console.log(`Server running on port ${SERVER_PORT}`);
 });

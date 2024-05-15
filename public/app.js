@@ -1,8 +1,10 @@
+const SERVER_URL = "http://localhost:8080";
+
 document.addEventListener('DOMContentLoaded', function () {
     const video = document.getElementById('video');
     const detectorContainer = document.getElementById('detector');
     const detectorParagraph = document.createElement('p');
-    detectorParagraph.textContent = "Monitoring...";
+    detectorParagraph.textContent = "Monitoring …";
     detectorContainer.appendChild(detectorParagraph);
 
     if (navigator.mediaDevices.getUserMedia) {
@@ -18,12 +20,13 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function personDetect() {
-    const canvas = document.getElementById('canvas');
-    const context = canvas.getContext('2d');
+    console.log("person detected");
+    const canvas = document.getElementById("canvas");
+    const context = canvas.getContext("2d");
 
     setTimeout(() => {
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        canvas.toBlob(blob => sendBlobSync(blob, 'http://localhost:8080/person_detect', handlePersonDetectionResponse));
+        canvas.toBlob(blob => sendBlobSync(blob, `${SERVER_URL}/person-detect`, handlePersonDetectionResponse));
     }, 100);
 }
 
@@ -35,8 +38,8 @@ function analyzePerson() {
     const analysisParagraph = document.createElement('p');
     analysisContainer.appendChild(analysisParagraph);
     analysisParagraph.textContent += "Autonomous supervisor: "
-    
-    canvas.toBlob(blob => sendBlobAsync(blob, 'http://localhost:8080/analyze', handlePersonAnalysis, analysisParagraph));
+
+    canvas.toBlob(blob => sendBlobAsync(blob, `${SERVER_URL}/analyze`, handlePersonAnalysis, analysisParagraph));
 }
 
 function sendBlobSync(blob, url, callback) {
@@ -123,7 +126,7 @@ function handlePersonAnalysis() {
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
     const analysisParagraph = document.getElementById('analysis').lastElementChild;
     const response = analysisParagraph.textContent.split(" ").slice(-2).join(" ");
-    canvas.toBlob(blob => sendBlobAsync(blob, 'http://localhost:8080/analyze-with-response', handleReason, reasonParagraph, response));
+    canvas.toBlob(blob => sendBlobAsync(blob, `${SERVER_URL}/analyze-with-response`, handleReason, reasonParagraph, response));
 }
 
 function handleReason() {

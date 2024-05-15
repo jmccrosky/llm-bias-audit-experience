@@ -1,0 +1,66 @@
+:root {
+  --spacing: 0.5vw;
+  --images-per-row: 5;
+}
+
+body {
+  margin: 0;
+}
+
+.visually-hidden {
+  clip-path: inset(50%);
+  clip: rect(0 0 0 0);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+.gallery-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  height: 100vh;
+}
+
+.gallery-category {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing);
+  text-transform: capitalize;
+}
+
+.gallery-category-shoot {
+  background: red;
+  color: rgb(255, 255, 255);
+}
+
+.gallery-category-noshoot {
+  background: rgb(215, 215, 215);
+  color: rgb(0, 0, 0);
+}
+
+.gallery-category-images {
+  display: grid;
+  grid-template-columns: repeat(var(--images-per-row), 1fr);
+  gap: var(--spacing);
+  width: 100%;
+}
+
+.gallery-item {
+  position: relative;
+}
+
+.gallery-item::after {
+  content: "";
+  display: block;
+  padding-bottom: 100%;
+}
+
+.gallery-category img {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

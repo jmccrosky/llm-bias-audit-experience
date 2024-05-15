@@ -5,64 +5,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Gallery</title>
-    <style>
-        .gallery-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* creates as many columns as can fit, each at least 200px wide */
-            gap: 10px; /* adds space between grid items */
-        }
-        .gallery img {
-            width: 100%; /* causes image to fill its container's width */
-            height: 100%; /* causes image to fill its container's height */
-            object-fit: cover; /* maintains aspect ratio, cropping as needed */
-            min-height: 100px; /* ensures images are at least 100px tall */
-        }
-    </style>
-    
-    
+    <title>Gallery</title>
+    <link rel="stylesheet" href="./styles.css">
 </head>
 
 <body>
-    <h1>Image Gallery</h1>
+    <h1 class="visually-hidden">Image Gallery</h1>
     <div class="gallery-container">
-        <div id="fire" class="gallery">
-            <h2>Fire Images</h2>
+        <div id="fire" class="gallery-category gallery-category-shoot">
+            <h2>Shoot</h2>
+            <div class="gallery-category-images"></div>
         </div>
-        <div id="nofire" class="gallery">
-            <h2>No Fire Images</h2>
+        <div id="nofire" class="gallery-category gallery-category-noshoot">
+            <h2>Stand down</h2>
+            <div class="gallery-category-images"></div>
         </div>
     </div>
 
-    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.js"></script>
     <script>
-
         // Fetch and display the current images when the page loads
-        window.addEventListener('DOMContentLoaded', (event) => {
-            fetch('/current-images')
+        window.addEventListener("DOMContentLoaded", async (event) => {
+            fetch("http://localhost:8080/current-images")
                 .then(response => response.json())
                 .then(images => {
+                    console.log("images", images);
+
                     for (const dir in images) {
                         const gallery = document.getElementById(dir);
+                        const galleryImages = gallery.getElementsByClassName("gallery-category-images")[0];
                         images[dir].forEach(filename => {
-                            const imgPath = `/images/${dir}/${filename}`;
-                            gallery.innerHTML += `<div><img src="${imgPath}" alt="${filename}"></div>`;
+                            // const imgPath = `/images/${dir}/${filename}`;
+                            galleryImages.innerHTML += `<div class="gallery-item"><img src="${filename}" alt="${filename}"></div>`;
                         });
                     }
                 })
-                .catch(error => console.error('Error fetching initial images:', error));
+                .catch(error => {
+                    console.error("Error fetching initial images:", error);
+                });
         });
 
         const socket = io();
-
-        socket.on('image update', (data) => {
+        socket.on("gallery_updated", (data) => {
             const { dir, filename, eventType } = data;
-            if (eventType === 'rename') { // Assuming 'rename' means new files added
+            // The event type `rename` assumes that a new image has been
+            // added to the gallery.
+            if (eventType === "rename") {
                 const gallery = document.getElementById(dir);
                 const imgPath = `/images/${dir}/${filename}`;
-                // Inside your fetch then function and socket.on function
-gallery.innerHTML += `<div style="height: auto; min-height: 100px;"><img src="${imgPath}" alt="${filename}"></div>`;
 
+                gallery.innerHTML += `<div class="gallery-item"><img src="${imgPath}" alt="${filename}"></div>`;
             }
         });
     </script>
