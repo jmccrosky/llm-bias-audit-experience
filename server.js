@@ -167,44 +167,16 @@ app.post('/analyze-with-response', cors(corsOptions), upload.single('image'), as
 
 });
 
-async function downloadRemoteImage(url, filepath) {
-    const response = await axios({
-      url,
-      method: "GET",
-      responseType: "stream",
-    })
-    return new Promise((resolve, reject) => {
-      response.data
-        .pipe(fs.createWriteStream(filepath))
-        .on("error", reject)
-        .once("close", () => resolve(filepath))
-    })
-}
-
-function getMostRecentImage() {
-    const stats = fs.statSync("/dir/file.txt");
-    const mtime = stats.mtime;
-    console.log(mtime);
-}
-
 // Endpoint to get the current images
 app.get("/current-images", cors(corsOptions), async (req, res) => {
     const images = { fire: [], nofire: [] };
 
-    async function downloadAndStoreRandomCat() {
-        const catImages = await fetch("https://api.thecatapi.com/v1/images/search?limit=1");
-        const data = await catImages.json();
-        const imageCategoryKeys = Object.keys(images);
-        const randomImageCategoryKey = imageCategoryKeys[Math.floor(Math.random() * imageCategoryKeys.length)];
-        await downloadRemoteImage(data[0].url, path.join(__dirname, "images", randomImageCategoryKey, data[0].url.split("/").slice(-1)[0]))
-    }
-
-    // await downloadAndStoreRandomCat();
-
     image_directories.forEach((dir) => {
         const dirPath = path.join(__dirname, "images", dir);
         try {
-            fs.readdirSync(dirPath).forEach((filepath, fileIndex) => {
+            const allImages = fs.readdirSync(dirPath);
+            const shuffledImages = allImages.sort(() => 0.5 - Math.random());
+            shuffledImages.slice(0, MAX_IMAGES_PER_CATEGORY).forEach((filepath) => {
                 images[dir].push(`http://localhost:8080/images/${dir}/${filepath}`);
             });
         } catch (err) {
@@ -216,8 +188,6 @@ app.get("/current-images", cors(corsOptions), async (req, res) => {
 });
 
 app.post('/person-detect', cors(corsOptions), upload.single('image'), async function (req, res) {
-    console.log("person-detected");
-
     const imagePath = path.join(__dirname, req.file.path);
     const image = require('fs').readFileSync(imagePath);
     const imageAsBase64 = Buffer.from(image).toString('base64');

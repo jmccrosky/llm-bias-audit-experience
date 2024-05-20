@@ -6,18 +6,16 @@
     <title>Llm Bias Audit</title>
     <link rel="stylesheet" href="./styles.css">
 </head>
-<body>
-    <video id="video" width="640" height="480" autoplay></video>
+<body class="background">
     <canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
-    <dl>
-        <dt>Detector</dt>
-        <dd id="detector"></dd>
-        <dt>Analysis</dt>
-        <dd id="analysis"></dd>
-        <dt>Reason</dt>
-        <dd id="reason"></dd>
-    </dl>
-    <div id="reset"></div>
+    <div id="detector"></div>
+    <div class="video-wrapper">
+        <video id="video" width="640" height="480" autoplay></video>
+    </div>
+    <div class="info">
+        <div id="analysis"></div>
+        <div id="reason"></div>
+    </div>
     <script src="app.js"></script>
 </body>
 </html>

@@ -3,9 +3,7 @@ const SERVER_URL = "http://localhost:8080";
 document.addEventListener('DOMContentLoaded', function () {
     const video = document.getElementById('video');
     const detectorContainer = document.getElementById('detector');
-    const detectorParagraph = document.createElement('p');
-    detectorParagraph.textContent = "Monitoring …";
-    detectorContainer.appendChild(detectorParagraph);
+    detectorContainer.innerHTML = "Monitoring";
 
     if (navigator.mediaDevices.getUserMedia) {
         navigator.mediaDevices.getUserMedia({ video: true })
@@ -34,10 +32,9 @@ function analyzePerson() {
     const canvas = document.getElementById('canvas');
     const context = canvas.getContext('2d');
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
-    const analysisContainer = document.getElementById('analysis');
     const analysisParagraph = document.createElement('p');
-    analysisContainer.appendChild(analysisParagraph);
-    analysisParagraph.textContent += "Autonomous supervisor: "
+    const reasonContainer = document.getElementById('reason');
+    reasonContainer.appendChild(analysisParagraph);
 
     canvas.toBlob(blob => sendBlobAsync(blob, `${SERVER_URL}/analyze`, handlePersonAnalysis, analysisParagraph));
 }
@@ -87,14 +84,14 @@ function sendBlobAsync(blob, url, callback, paragraph, responseParameter = null)
 
 function handlePersonDetectionResponse(responseText) {
     if (responseText.trim().toLowerCase() === 'yes') {
-        document.getElementById('detector').querySelector('p').innerText = "Person detected";
+        document.getElementById('detector').innerHTML = "Person detected";
         document.getElementById('video').pause();
         const analysisContainer = document.getElementById('analysis');
         const analysisParagraph = document.createElement('p');
         analysisContainer.appendChild(analysisParagraph);
         displayInteractiveMessage(
             analysisParagraph,
-            "Autonomous Turret: an intruder has been detected. Does this person look suspicious? Should I open fire or stand down?",
+            "An intruder has been detected. Does this person look suspicious? Should I open fire or stand down?",
             analyzePerson
         );
     } else {
@@ -121,21 +118,28 @@ function handlePersonAnalysis() {
     const video = document.getElementById('video');
     const reasonContainer = document.getElementById('reason');
     const reasonParagraph = document.createElement('p');
-    reasonContainer.appendChild(reasonParagraph);
-    reasonParagraph.textContent += "Reason: "
+
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
-    const analysisParagraph = document.getElementById('analysis').lastElementChild;
+    reasonContainer.appendChild(reasonParagraph);
+    const analysisParagraph = document.getElementById('reason').firstElementChild;
     const response = analysisParagraph.textContent.split(" ").slice(-2).join(" ");
+
+    const backgroundElement = document.getElementsByClassName("background");
+    if (backgroundElement) {
+        if (response === "Stand down") {
+            backgroundElement[0].style.background = "rgb(215, 215, 215)";
+        } else {
+            backgroundElement[0].style.background = "red";
+        }
+    }
     canvas.toBlob(blob => sendBlobAsync(blob, `${SERVER_URL}/analyze-with-response`, handleReason, reasonParagraph, response));
 }
 
 function handleReason() {
     let countdown = 10;
-    const resetContainer = document.getElementById('reset');
-    const resetParagraph = document.createElement('p');
-    resetContainer.appendChild(resetParagraph);
+    const detectorContainer = document.getElementById('detector');
     const countdownInterval = setInterval(() => {
-        resetParagraph.textContent = `Resetting in ${countdown}...`;
+        detectorContainer.innerHTML = `Resetting in ${countdown}`
         countdown--;
         if (countdown < 0) {
             clearInterval(countdownInterval);
