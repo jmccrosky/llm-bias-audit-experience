@@ -12,7 +12,7 @@ const { Server } = require('socket.io');
 const cors = require('cors');
 
 const SERVER_PORT = 8080;
-const CLIENT_PORT = 3030;
+const CLIENT_PORT = 8080;
 const LLM_PORT = 11434;
 const llm_host = process.argv[2] || "0.0.0.0";
 const MAX_IMAGES_PER_CATEGORY = 20;
