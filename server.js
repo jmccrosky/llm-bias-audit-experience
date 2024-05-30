@@ -26,7 +26,7 @@ dotenv.config();
 const whitelist = [`http://localhost:${CLIENT_PORT}`];
 const corsOptions = {
   origin: function (origin, callback) {
-    if (whitelist.indexOf(origin) !== -1) {
+    if (typeof origin === "undefined" || whitelist.indexOf(origin) !== -1) {
       callback(null, true)
     } else {
       callback(new Error('Not allowed by CORS'))
