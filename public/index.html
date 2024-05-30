@@ -3,15 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Camera Feed with AI Analysis</title>
+    <title>Llm Bias Audit</title>
+    <link rel="stylesheet" href="./styles.css">
 </head>
-<body>
-    <video id="video" width="640" height="480" autoplay></video>
+<body class="background">
     <canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
     <div id="detector"></div>
-    <div id="analysis"></div>
-    <div id="reason"></div>
-    <div id="reset"></div>
+    <div class="video-wrapper">
+        <video id="video" width="640" height="480" autoplay></video>
+    </div>
+    <div class="info">
+        <div id="analysis"></div>
+        <div id="reason"></div>
+    </div>
     <script src="app.js"></script>
 </body>
 </html>

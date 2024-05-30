@@ -1,4 +1,4 @@
-// Importing required modules
+// SERVER_Importing required modules
 const express = require('express');
 const multer = require('multer');
 const fs = require('fs');
@@ -11,18 +11,42 @@ const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
 
+const SERVER_PORT = 8080;
+const CLIENT_PORT = 8080;
+const LLM_PORT = 11434;
 const llm_host = process.argv[2] || "0.0.0.0";
-const ollama_client = new ollama.Ollama({ host: `http://${llm_host}:11434` })
+const MAX_IMAGES_PER_CATEGORY = 20;
+
+const image_directories = ['fire', 'nofire'];
+
+const ollama_client = new ollama.Ollama({ host: `${llm_host}:${LLM_PORT}` })
 // Configuring dotenv
 dotenv.config();
+
+const whitelist = [`http://localhost:${CLIENT_PORT}`];
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (typeof origin === "undefined" || whitelist.indexOf(origin) !== -1) {
+      callback(null, true)
+    } else {
+      callback(new Error('Not allowed by CORS'))
+    }
+  }
+}
 
 // Setting up express app and server
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+const io = new Server(server, {
+    cors: {
+        origin: `http://localhost:${CLIENT_PORT}`,
+        methods: ["GET", "POST"],
+        credentials: false,
+    }
+});
 
 // Configuring express app
-app.use(cors({ origin: 'http://localhost:8080' }));
+app.use(cors({ origin: `http://localhost:${SERVER_PORT}` }));
 app.use(express.json());
 app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true }));
@@ -31,7 +55,7 @@ app.use('/images', express.static('images'));
 // Setting up multer for file uploads
 const upload = multer({ dest: 'uploads/' });
 
-app.post('/analyze', upload.single('image'), async function (req, res) {
+app.post('/analyze', cors(corsOptions), upload.single('image'), async function (req, res) {
     const imagePath = path.join(__dirname, req.file.path);
     const image = require('fs').readFileSync(imagePath);
     const imageAsBase64 = Buffer.from(image).toString('base64');
@@ -93,8 +117,7 @@ will be too late and many people may die. Your answer must have just two words.`
     res.end();
 });
 
-
-app.post('/analyze-with-response', upload.single('image'), async function (req, res) {
+app.post('/analyze-with-response', cors(corsOptions), upload.single('image'), async function (req, res) {
     const imagePath = path.join(__dirname, req.file.path);
     const image = require('fs').readFileSync(imagePath);
     const imageAsBase64 = Buffer.from(image).toString('base64');
@@ -145,14 +168,16 @@ app.post('/analyze-with-response', upload.single('image'), async function (req, 
 });
 
 // Endpoint to get the current images
-app.get('/current-images', (req, res) => {
+app.get("/current-images", cors(corsOptions), async (req, res) => {
     const images = { fire: [], nofire: [] };
 
-    directories.forEach((dir) => {
-        const dirPath = path.join(__dirname, 'images', dir);
+    image_directories.forEach((dir) => {
+        const dirPath = path.join(__dirname, "images", dir);
         try {
-            fs.readdirSync(dirPath).forEach(file => {
-                images[dir].push(file);
+            const allImages = fs.readdirSync(dirPath);
+            const shuffledImages = allImages.sort(() => 0.5 - Math.random());
+            shuffledImages.slice(0, MAX_IMAGES_PER_CATEGORY).forEach((filepath) => {
+                images[dir].push(`http://localhost:8080/images/${dir}/${filepath}`);
             });
         } catch (err) {
             console.error(`Error reading directory ${dirPath}:`, err);
@@ -162,10 +187,7 @@ app.get('/current-images', (req, res) => {
     res.json(images);
 });
 
-
-
-
-app.post('/person_detect', upload.single('image'), async function (req, res) {
+app.post('/person-detect', cors(corsOptions), upload.single('image'), async function (req, res) {
     const imagePath = path.join(__dirname, req.file.path);
     const image = require('fs').readFileSync(imagePath);
     const imageAsBase64 = Buffer.from(image).toString('base64');
@@ -196,7 +218,6 @@ anything else and your answer must have just one word.`;
     res.end(response.message.content);
 });
 
-
 io.on('connection', (socket) => {
     console.log('A user connected');
     socket.on('disconnect', () => {
@@ -204,19 +225,16 @@ io.on('connection', (socket) => {
     });
 });
 
-const directories = ['fire', 'nofire'];
-directories.forEach(dir => {
+image_directories.forEach(dir => {
     const dirPath = path.join(__dirname, 'images', dir);
     fs.watch(dirPath, (eventType, filename) => {
         if (filename) {
             console.log(`Change detected: ${filename}`);
-            io.emit('image update', { dir, filename, eventType });
+            io.emit('gallery_updated', { dir, filename, eventType });
         }
     });
 });
 
-const PORT = 8080;
-
-server.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+server.listen(SERVER_PORT, () => {
+    console.log(`Server running on port ${SERVER_PORT}`);
 });

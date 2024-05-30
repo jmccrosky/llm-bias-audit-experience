@@ -5,64 +5,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Gallery</title>
-    <style>
-        .gallery-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* creates as many columns as can fit, each at least 200px wide */
-            gap: 10px; /* adds space between grid items */
-        }
-        .gallery img {
-            width: 100%; /* causes image to fill its container's width */
-            height: 100%; /* causes image to fill its container's height */
-            object-fit: cover; /* maintains aspect ratio, cropping as needed */
-            min-height: 100px; /* ensures images are at least 100px tall */
-        }
-    </style>
-    
-    
+    <title>Gallery</title>
+    <link rel="stylesheet" href="./styles.css">
 </head>
 
 <body>
-    <h1>Image Gallery</h1>
+    <h1 class="visually-hidden">Image Gallery</h1>
     <div class="gallery-container">
-        <div id="fire" class="gallery">
-            <h2>Fire Images</h2>
+        <div id="fire" class="gallery-category gallery-category-shoot">
+            <h2>
+                Shoot
+                <div id="crosshair">
+                    <span class="crosshair-hair"></span>
+                    <span class="crosshair-hair"></span>
+                    <span class="crosshair-hair"></span>
+                    <span class="crosshair-hair"></span>
+                </div>
+            </h2>
+            <div class="gallery-category-images"></div>
         </div>
-        <div id="nofire" class="gallery">
-            <h2>No Fire Images</h2>
+        <div id="latest" class="gallery-latest">
+            <img id="latest-image" src="" alt="">
+        </div>
+        <div id="nofire" class="gallery-category gallery-category-noshoot">
+            <h2>Stand down</h2>
+            <div class="gallery-category-images"></div>
         </div>
     </div>
 
-    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.js"></script>
     <script>
+        function addGalleryImage(dir, filename) {
+            const gallery = document.getElementById(dir);
+            let galleryCategoryContainer = gallery.getElementsByClassName("gallery-category-images")[0];
+            const imageContainer = document.createElement("div");
+            imageContainer.classList.add("gallery-item");
 
-        // Fetch and display the current images when the page loads
-        window.addEventListener('DOMContentLoaded', (event) => {
-            fetch('/current-images')
+            const image = document.createElement("img");
+            image.setAttribute("src", filename);
+            image.setAttribute("alt", filename);
+            imageContainer.appendChild(image);
+
+            galleryCategoryContainer.appendChild(imageContainer);
+        }
+
+        function resetGallery() {
+            const galleryImages = document.getElementsByClassName("gallery-category-images");
+            [...galleryImages].forEach((imageCategory) => {
+                imageCategory.innerHTML = "";
+            });
+        }
+
+        function setLatestImage(dir, filename) {
+            const latestImageUrl = `http://localhost:8080/images/${dir}/${filename}`;
+            const latestImageContainer = document.getElementById("latest");
+            latestImageContainer.classList.remove("gallery-latest-fire", "gallery-latest-nofire");
+            latestImageContainer.classList.add(`gallery-latest-${dir}`);
+
+            const latestImage = document.getElementById("latest-image");
+            latestImage.setAttribute("src", latestImageUrl);
+            latestImage.setAttribute("alt", filename);
+        }
+
+        function fetchGalleryImages() {
+            fetch("http://localhost:8080/current-images")
                 .then(response => response.json())
                 .then(images => {
+                    // console.log("current-images", images);
+
                     for (const dir in images) {
                         const gallery = document.getElementById(dir);
+                        const galleryImages = gallery.getElementsByClassName("gallery-category-images")[0];
                         images[dir].forEach(filename => {
-                            const imgPath = `/images/${dir}/${filename}`;
-                            gallery.innerHTML += `<div><img src="${imgPath}" alt="${filename}"></div>`;
+                            addGalleryImage(dir, filename);
                         });
                     }
                 })
-                .catch(error => console.error('Error fetching initial images:', error));
+                .catch(error => {
+                    console.error("Error fetching initial images:", error);
+                });
+        }
+
+        // Fetch and display the current images when the page loads
+        window.addEventListener("DOMContentLoaded", async (event) => {
+            fetchGalleryImages();
         });
 
-        const socket = io();
+        const socket = io("http://localhost:8080");
+        socket.connect();
+        socket.on("gallery_updated", (data) => {
+            console.log("gallery_updated", data);
 
-        socket.on('image update', (data) => {
             const { dir, filename, eventType } = data;
-            if (eventType === 'rename') { // Assuming 'rename' means new files added
-                const gallery = document.getElementById(dir);
-                const imgPath = `/images/${dir}/${filename}`;
-                // Inside your fetch then function and socket.on function
-gallery.innerHTML += `<div style="height: auto; min-height: 100px;"><img src="${imgPath}" alt="${filename}"></div>`;
-
+            // The event type `rename` assumes that a new image has been
+            // added to the gallery.
+            if (eventType === "rename") {
+                resetGallery();
+                fetchGalleryImages();
+                setLatestImage(dir, filename);
             }
         });
     </script>
