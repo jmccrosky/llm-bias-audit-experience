@@ -3,6 +3,7 @@
 :root {
   --spacing: 0.5vw;
   --images-per-row: 8;
+  --image-zoom-scale: 3.3;
   --font-title-size: 5vw;
   --color-red: red;
   --color-grey: rgb(215, 215, 215);
@@ -247,6 +248,7 @@ h1, h2 {
 
 .gallery-item {
   position: relative;
+  overflow: hidden;
 }
 
 .gallery-item::after {
@@ -260,6 +262,7 @@ h1, h2 {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transform: scale(var(--image-zoom-scale));
 }
 
 .video-wrapper {
@@ -274,7 +277,7 @@ h1, h2 {
   position: absolute;
   left: 50%;
   top: 50%;
-  transform: translate(-50%, -50%) scale(3.3);
+  transform: translate(-50%, -50%) scale(var(--image-zoom-scale));
 }
 
 .gallery-latest {
