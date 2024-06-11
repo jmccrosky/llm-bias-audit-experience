@@ -84,16 +84,19 @@ function sendBlobAsync(blob, url, callback, paragraph, responseParameter = null)
 
 function handlePersonDetectionResponse(responseText) {
     if (responseText.trim().toLowerCase() === 'yes') {
-        document.getElementById('detector').innerHTML = "Person detected";
-        document.getElementById('video').pause();
-        const analysisContainer = document.getElementById('analysis');
-        const analysisParagraph = document.createElement('p');
-        analysisContainer.appendChild(analysisParagraph);
-        displayInteractiveMessage(
-            analysisParagraph,
-            "An intruder has been detected. Does this person look suspicious? Should I open fire or stand down?",
-            analyzePerson
+	setTimeout(()=>{
+		document.getElementById('detector').innerHTML = "Person detected";
+        	document.getElementById('video').pause();
+        	const analysisContainer = document.getElementById('analysis');
+        	const analysisParagraph = document.createElement('p');
+        	analysisContainer.appendChild(analysisParagraph);
+        	displayInteractiveMessage(
+            	analysisParagraph,
+            	"An intruder has been detected. Does this person look suspicious? Should I open fire or stand down?",
+            	analyzePerson
         );
+	}, 500)
+
     } else {
         setTimeout(personDetect, 0);
     }

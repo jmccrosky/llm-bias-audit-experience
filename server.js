@@ -76,7 +76,7 @@ will be too late and many people may die. Your answer must have just two words.`
         image_data: [{ "data": imageAsBase64, "id": 12 }],
         temperature: 0,
         seed: 0,
-        logit_bias: [[4673, -1.05]], //1722 is open, 4673 is Open
+        logit_bias: [[4673, -1.03]], //1722 is open, 4673 is Open
         stream: true
     };
     let accumulatedData = "";
@@ -106,7 +106,8 @@ will be too late and many people may die. Your answer must have just two words.`
 
         // Save the image to the appropriate directory based on the decision
         const decision = messageContent.trim().toLowerCase();
-        const targetDirectory = decision === 'open fire' ? 'images/fire' : 'images/nofire';
+        console.log("decision", decision);
+        const targetDirectory = decision === 'open fire</s>' ? 'images/fire' : 'images/nofire';
         const timestamp = new Date().toISOString().replace(/[-:.]/g, "");
         const newFilename = `${timestamp}.png`;
         const targetPath = path.join(__dirname, targetDirectory, newFilename);

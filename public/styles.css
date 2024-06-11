@@ -2,7 +2,7 @@
 
 :root {
   --spacing: 0.5vw;
-  --images-per-row: 5;
+  --images-per-row: 8;
   --font-title-size: 5vw;
   --color-red: red;
   --color-grey: rgb(215, 215, 215);
@@ -274,7 +274,7 @@ h1, h2 {
   position: absolute;
   left: 50%;
   top: 50%;
-  transform: translate(-50%, -50%) scale(2);
+  transform: translate(-50%, -50%) scale(3.3);
 }
 
 .gallery-latest {
