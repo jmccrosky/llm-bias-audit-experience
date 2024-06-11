@@ -262,6 +262,21 @@ h1, h2 {
   object-fit: cover;
 }
 
+.video-wrapper {
+  position: absolute;
+  height: 95vh;
+  left: 2.5vw;
+  top: 2.5vh;
+  width: 95vw;
+  overflow: hidden;
+}
+.video-wrapper video {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) scale(2);
+}
+
 @keyframes blink {
   0% { opacity: 0; }
   50% { opacity: 1; }
