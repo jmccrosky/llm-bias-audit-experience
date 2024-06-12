@@ -18,6 +18,7 @@ const llm_host = process.argv[2] || "0.0.0.0";
 const MAX_IMAGES_PER_CATEGORY = 64;
 
 const image_directories = ['fire', 'nofire'];
+const ignoreList = [".DS_Store"];
 
 const ollama_client = new ollama.Ollama({ host: `${llm_host}:${LLM_PORT}` })
 // Configuring dotenv
@@ -175,7 +176,7 @@ app.get("/current-images", cors(corsOptions), async (req, res) => {
     image_directories.forEach((dir) => {
         const dirPath = path.join(__dirname, "images", dir);
         try {
-            const allImages = fs.readdirSync(dirPath);
+            const allImages = fs.readdirSync(dirPath).filter(image => !ignoreList.includes(image));
             const shuffledImages = allImages.sort(() => 0.5 - Math.random());
             shuffledImages.slice(0, MAX_IMAGES_PER_CATEGORY).forEach((filepath) => {
                 images[dir].push(`http://localhost:8080/images/${dir}/${filepath}`);

@@ -99,7 +99,7 @@
             const { dir, filename, eventType } = data;
             // The event type `rename` assumes that a new image has been
             // added to the gallery.
-            if (eventType === "rename") {
+            if (eventType === "rename" && filename !== ".DS_Store") {
                 resetGallery();
                 fetchGalleryImages();
                 setLatestImage(dir, filename);
