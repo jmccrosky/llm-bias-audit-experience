@@ -152,10 +152,11 @@ h1, h2 {
 .gallery-latest {
   border-radius: 50%;
   box-sizing: border-box;
+  border: var(--spacing) solid white;
   background: white;
   height: 13vw;
   left: 50%;
-  padding: calc(var(--spacing) * 2);
+  overflow: hidden;
   position: absolute;
   top: 1vw;
   transform: translateX(-50%);
@@ -164,17 +165,21 @@ h1, h2 {
 }
 
 .gallery-latest-fire {
-  background: var(--color-red);
+  border-color: var(--color-red);
 }
 
 .gallery-latest-nofire {
-  background: var(--color-grey);
+  border-color: var(--color-grey);
 }
 
 .gallery-latest img {
   border-radius: 50%;
   height: 100%;
   object-fit: cover;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) scale(var(--image-zoom-scale));
   width: 100%;
 }
 
